@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特約商家優惠卡片</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 2.5em;
+        }
+        h2 {
+            font-size: 2em;
+        }
+        .merchant-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .merchant-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        .merchant-card:hover {
+            transform: translateY(-5px);
+        }
+        .merchant-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .card-content {
+            padding: 20px;
+        }
+        .merchant-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.4em;
+            color: #2c3e50;
+        }
+        .merchant-card p {
+            margin: 0 0 8px 0;
+            color: #34495e;
+        }
+        .merchant-card .offer {
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        .region-tag {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(83, 52, 219, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        .map-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .map-link:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: #7f8c8d;
+        }
+        #loadingSpinner {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #115293;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .carousel {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            overflow: hidden;
+            margin: 0 auto 30px;
+        }
+        .carousel-inner {
+            display: flex;
+            transition: transform 0.5s ease;
+            height: 100%;
+        }
+        .carousel-item {
+            min-width: 100%;
+            height: 100%;
+        }
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .carousel-control.prev {
+            left: 10px;
+        }
+        .carousel-control.next {
+            right: 10px;
+        }
+        .card-usage-rules {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .card-usage-rules h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .card-usage-rules ul {
+            padding-left: 20px;
+        }
+        .card-usage-rules li {
+            margin-bottom: 10px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 3px;
+            background-color: #0f8258;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            border-radius: 8%;
+        }
+        .tab:hover {
+            background-color: #20cd8d;
+        }
+        .tab.active {
+            background-color: #09d78b;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>創創卡特約商家列表</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'latestInfo')">最新資訊</button>
+            <button class="tab" onclick="openTab(event, 'merchantList')">商家列表</button>
+            <button class="tab" onclick="openTab(event, 'usageRules')">使用規則</button>
+        </div>
+
+        <div id="latestInfo" class="tab-content active">
+            <div class="carousel">
+                <div class="carousel-inner" id="carouselInner"></div>
+                <a href="#" class="carousel-control prev" onclick="moveCarousel(-1)">&#10094;</a>
+                <a href="#" class="carousel-control next" onclick="moveCarousel(1)">&#10095;</a>
+            </div>
+        </div>
+
+        <div id="merchantList" class="tab-content">
+            <div id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>載入中...</p>
+            </div>
+            <div class="merchant-list"></div>
+        </div>
+
+        <div id="usageRules" class="tab-content">
+            <div class="card-usage-rules">
+                <h2>卡片使用規則</h2>
+                <ul id="rulesList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MERCHANT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/186oo7FqDtHX81c-kGyPyFHB0g1wMLrFaZDIHChG-exA/pubhtml?gid=0&single=true';
+        let allMerchants = [];
+        let currentCarouselIndex = 0;
+
+        function getValidImageUrl(imageUrl) {
+            if (!imageUrl || !imageUrl.startsWith('http')) {
+                return 'https://via.placeholder.com/300x200';
+            }
+            return imageUrl;
+        }
+
+        async function fetchData(url) {
+            showLoading();
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                hideLoading();
+                return Array.from(doc.querySelectorAll('table tr')).slice(2);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                hideLoading();
+                return [];
+            }
+        }
+
+        async function fetchMerchants() {
+            const rows = await fetchData(MERCHANT_SHEET_URL);
+            allMerchants = rows.map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                    region: cells[0].textContent.trim(),
+                    name: cells[1].textContent.trim(),
+                    offer: cells[2].textContent.trim(),
+                    address: cells[3].textContent.trim(),
+                    openingHours: cells[4].textContent.trim(),
+                    googleMapsUrl: cells[5].textContent.trim(),
+                    imageUrl: cells[6].textContent.trim()
+                };
+            }).filter(merchant => merchant.name && merchant.offer);
+            renderMerchants(allMerchants);
+        }
+
+        async function fetchCardUsageRules() {
+            try {
+                const response = await fetch('rule.txt');
+                const text = await response.text();
+                const rules = text.split('\n').filter(rule => rule.trim());
+                const rulesList = document.getElementById('rulesList');
+                rulesList.innerHTML = rules.map(rule => `<li>${rule}</li>`).join('');
+            } catch (error) {
+                console.error('Error fetching rules:', error);
+                document.getElementById('rulesList').innerHTML = '<li>無法載入使用規則</li>';
+            }
+        }
+
+        function renderMerchants(merchants) {
+            const merchantList = document.querySelector('.merchant-list');
+            if (merchants.length === 0) {
+                merchantList.innerHTML = '<p class="no-results">沒有符合條件的商家</p>';
+                return;
+            }
+            merchantList.innerHTML = merchants.map((merchant, index) => `
+                <div class="merchant-card">
+                    <div class="region-tag">${merchant.region}</div>
+                    <img src="${getValidImageUrl(merchant.imageUrl)}" alt="${merchant.name}" onerror="this.src='https://via.placeholder.com/300x200'">
+                    <div class="card-content">
+                        <h3>${merchant.name}</h3>
+                        <p class="offer">${merchant.offer}</p>
+                        <p>${merchant.address}</p>
+                        <p>${merchant.openingHours}</p>
+                        <a href="${merchant.googleMapsUrl}" target="_blank" class="map-link">在 Google Maps 上查看</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        function setupCarousel() {
+            const carouselInner = document.getElementById('carouselInner');
+            const images = [
+                '/image/image1.jpg',
+                '/image/image2.jpg',
+                '/image/image3.jpg',
+                '/image/image4.jpg',
+            ];
+
+            images.forEach((src, index) => {
+                const item = document.createElement('div');
+                item.className = 'carousel-item';
+                item.innerHTML = `<img src="${src}" alt="Carousel Image ${index + 1}" onerror="this.src='https://via.placeholder.com/400x400'">`;
+                carouselInner.appendChild(item);
+            });
+
+            updateCarousel();
+        }
+
+        function moveCarousel(direction) {
+            const items = document.querySelectorAll('.carousel-item');
+            currentCarouselIndex = (currentCarouselIndex + direction + items.length) % items.length;
+            updateCarousel();
+        }
+
+        function updateCarousel() {
+            const inner = document.querySelector('.carousel-inner');
+            inner.style.transform = `translateX(-${currentCarouselIndex * 100}%)`;
+        }
+
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            const tabs = document.getElementsByClassName("tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        async function init() {
+            await fetchMerchants();
+            await fetchCardUsageRules();
+            setupCarousel();
+        }
+
+        init();
+    </script>
+</body>
+</html>
