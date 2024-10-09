@@ -11,6 +11,8 @@
             margin: 0;
             padding: 20px;
             background-color: #f0f2f5;
+            padding-top: 70px; /* 調整這個值以適應頂部按鈕的高度 */
+            padding-bottom: 50px; /* 調整這個值以適應底部版權信息的高度 */
         }
         .container {
             max-width: 1200px;
@@ -193,18 +195,61 @@
         .tab-content.active {
             display: block;
         }
+        .fixed-top {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #f8f9fa;
+        z-index: 1000;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            padding: 10px 0;
+        }
+        .refresh-button {
+            background-color: #0f8258;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+            border-radius: 8%;
+        }
+        .refresh-button:hover {
+            background-color: #20cd8d;
+        }
+        .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: #f8f9fa;
+        color: #6c757d;
+        text-align: center;
+        padding: 10px 0;
+        font-size: 0.9em;
+        z-index: 1000;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>創創卡特約商家列表</h1>
-        
-        <div class="tabs">
+    <div class="fixed-top">
+        <div class="button-container">
             <button class="tab active" onclick="openTab(event, 'latestInfo')">最新資訊</button>
             <button class="tab" onclick="openTab(event, 'merchantList')">商家列表</button>
             <button class="tab" onclick="openTab(event, 'usageRules')">使用規則</button>
+            <button class="refresh-button" onclick="refreshMerchants()">重新讀取商家資訊</button>
         </div>
-
+    </div>
+    
+    <div class="container">
+        <h1>創創卡特約商家列表</h1>
+        
         <div id="latestInfo" class="tab-content active">
             <div class="carousel">
                 <div class="carousel-inner" id="carouselInner"></div>
@@ -212,7 +257,7 @@
                 <a href="#" class="carousel-control next" onclick="moveCarousel(1)">&#10095;</a>
             </div>
         </div>
-
+        
         <div id="merchantList" class="tab-content">
             <div id="loadingSpinner">
                 <div class="spinner"></div>
@@ -220,7 +265,7 @@
             </div>
             <div class="merchant-list"></div>
         </div>
-
+        
         <div id="usageRules" class="tab-content">
             <div class="card-usage-rules">
                 <h2>卡片使用規則</h2>
@@ -228,7 +273,10 @@
             </div>
         </div>
     </div>
-
+    <div class="footer">
+        &copy; 2023 創創卡特約商家. 版權所有.
+    </div>
+    
     <script>
         const MERCHANT_SHEET_URL = 'https://docs.google.com/spreadsheets/d/186oo7FqDtHX81c-kGyPyFHB0g1wMLrFaZDIHChG-exA/pubhtml?gid=0&single=true';
         let allMerchants = [];
@@ -359,6 +407,11 @@
 
             document.getElementById(tabName).classList.add("active");
             evt.currentTarget.classList.add("active");
+        }
+
+        async function refreshMerchants() {
+            allMerchants = [];
+            await fetchMerchants();
         }
 
         async function init() {
